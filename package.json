@@ -6,7 +6,8 @@
   "license": "MIT",
   "engines": { "node": ">=24.15.0" },
   "scripts": {
-    "test": "node --test tests/lab.test.mjs tests/resolutions.test.mjs",
+    "test": "node --test tests/lab.test.mjs tests/resolutions.test.mjs tests/semantic-smoke.test.mjs",
+    "smoke": "node scripts/semantic-smoke.mjs",
     "doctor": "node skills/whitechronos-lab/scripts/lab.mjs doctor",
     "lab": "node skills/whitechronos-lab/scripts/lab.mjs",
     "upstreams": "node scripts/upstreams.mjs"

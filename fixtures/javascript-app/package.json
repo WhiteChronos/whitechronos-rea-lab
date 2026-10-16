@@ -1,0 +1,6 @@
+{
+  "name": "whitechronos-owned-analysis-fixture",
+  "private": true,
+  "type": "module",
+  "main": "index.js"
+}

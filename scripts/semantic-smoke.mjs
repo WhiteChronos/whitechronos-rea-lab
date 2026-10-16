@@ -3,17 +3,18 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { runAnalysis, readAnalysisOptions } from '../skills/whitechronos-lab/scripts/resolutions.mjs';
+import {verifySourceEvidence} from '../skills/whitechronos-lab/scripts/semantic-evidence.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fixture = path.join(root,'fixtures/javascript-app');
 
 export function verifySemanticSmoke(result, value, sourceSha256) {
-  if (result.exitCode !== 0 || result.status !== 'completed-with-recorded-limitations') throw Error('Análise real falhou ou ficou parcial; consulte summary.json e stderr.log.');
+  const proof=verifySourceEvidence(result,value,{'index.js':sourceSha256});
   const evidence = value.evidence ?? value;
   const graph = evidence.normalized_result?.semantic_graph;
   if (evidence.operation !== 'analyze_javascript_application' || !graph?.graph_id || !Array.isArray(graph.nodes)) throw Error('Grafo semântico ausente; inventário não satisfaz o smoke.');
   const nodes = graph.nodes.filter(n => n.identity?.module_path === 'index.js' && n.identity?.artifact_sha256 === sourceSha256);
-  if (nodes.length < 3) throw Error('Grafo não contém observações suficientes vinculadas ao hash da fonte selecionada.');
+  if (proof.matchingSourceNodes < 3) throw Error('Grafo não contém observações suficientes vinculadas ao hash da fonte selecionada.');
   const selected = evidence.parameters?.source_paths ?? evidence.normalized_result?.source_selection?.requested_paths;
   if (!Array.isArray(selected) || selected.length !== 1 || selected[0] !== 'index.js') throw Error('Escopo de fontes inesperado.');
   return { passed: true, operation:evidence.operation, graphId:graph.graph_id, matchingSourceNodes:nodes.length,

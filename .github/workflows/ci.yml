@@ -26,4 +26,5 @@ jobs:
       - run: npm test
       - run: npm run doctor
       - run: npm run smoke
+      - run: npm run project:smoke
       - run: npm run upstreams

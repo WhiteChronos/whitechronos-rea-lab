@@ -19,3 +19,9 @@ test('evidence integrity and operator declaration stay distinct',async t=>{
  assert.equal(buildReport(w).tasks[0].evidenceStatus,'invalid-evidence');assert.equal(buildReport(w).coverage.product,'unverified');
  fs.writeFileSync(path.join(w,'tasks.json'),'{bad');assert.throws(()=>buildReport(w));
 });
+test('old task-added event does not conceal missing task-state event',async t=>{
+ const {workspace:w}=setup(t),task=await addTask(w,{title:'A',acceptance:'pass'});fs.writeFileSync(path.join(w,'proof'),'{}');
+ await setTask(w,task.id,{state:'done',evidence:'proof'});assert.equal(buildReport(w).journalDivergent,false);
+ const file=path.join(w,'events.jsonl');fs.writeFileSync(file,fs.readFileSync(file,'utf8').split('\n').filter(l=>!l.includes('task-state')).join('\n'));
+ assert.equal(buildReport(w).journalDivergent,true);
+});

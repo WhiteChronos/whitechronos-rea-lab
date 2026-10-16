@@ -1,6 +1,7 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
 import {setup} from './project-helpers.mjs';import {fileDigest} from '../skills/whitechronos-lab/scripts/projects/tasks.mjs';
 import {analyzeProject,reconcileRuns} from '../skills/whitechronos-lab/scripts/projects/analysis.mjs';
+import {buildReport} from '../skills/whitechronos-lab/scripts/projects/report.mjs';
 function runner(transform=x=>x){return async(entry,target,options)=>{fs.mkdirSync(options.outputDir);const hashes=Object.fromEntries(options.sourcePaths.map(s=>[s,fileDigest(path.join(target,s))]));const value={operation:'analyze_javascript_application',parameters:{source_paths:options.sourcePaths},normalized_result:{semantic_graph:{graph_id:'test-only',nodes:options.sourcePaths.map(s=>({identity:{module_path:s,artifact_sha256:hashes[s]}}))}}};const stdout=path.join(options.outputDir,'stdout.json');fs.writeFileSync(stdout,JSON.stringify(transform(value,target)));return{exitCode:0,status:'completed-with-recorded-limitations',stdout,sha256:fileDigest(stdout)};};}
 test('analysis validates multiple sources and never marks task done',async t=>{
  const f=setup(t);fs.writeFileSync(path.join(f.target,'other.js'),'export const b=2;');
@@ -24,4 +25,17 @@ test('reconciliation never assumes unknown PID is absent',async t=>{
  const dir=fs.readdirSync(path.join(f.workspace,'runs'))[0],file=path.join(f.workspace,'runs',dir,'run.json');
  for(const [probe,want] of [['unknown','unknown'],['active','running'],['absent','interrupted']]){
  const r=JSON.parse(fs.readFileSync(file));r.state='running';fs.writeFileSync(file,JSON.stringify(r));const runs=await reconcileRuns(f.workspace,{probeProcess:()=>probe});assert.equal(runs[0].state,want);}
+});
+test('deleted or changed semantic evidence invalidates coverage',async t=>{
+ const f=setup(t),r=await analyzeProject(f.workspace,['--source-path','index.js'],{runner:runner()});
+ assert.equal(buildReport(f.workspace).coverage.semantic,'verified-for-selected-sources');
+ const file=path.join(f.workspace,r.evidence.path),body=fs.readFileSync(file);fs.writeFileSync(file,'changed');
+ assert.equal(buildReport(f.workspace).coverage.semantic,'unverified');fs.writeFileSync(file,body);fs.unlinkSync(file);
+ assert.equal(buildReport(f.workspace).coverage.semantic,'unverified');
+});
+test('missing analysis event makes journal divergence visible',async t=>{
+ const f=setup(t);await analyzeProject(f.workspace,['--source-path','index.js'],{runner:runner()});
+ assert.equal(buildReport(f.workspace).journalDivergent,false);const file=path.join(f.workspace,'events.jsonl');
+ fs.writeFileSync(file,fs.readFileSync(file,'utf8').split('\n').filter(l=>!l.includes('analysis-finished')).join('\n'));
+ assert.equal(buildReport(f.workspace).journalDivergent,true);
 });

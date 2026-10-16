@@ -22,10 +22,10 @@ export function createProject({target,name,workspace,mode}){
  assertSeparatePaths({target,workspace});if(!fs.statSync(target).isDirectory())throw Error('Alvo deve ser diretório.');
  const revision=spawnSync('git',['-C',target,'rev-parse','HEAD'],{encoding:'utf8',windowsHide:true}).stdout?.trim();
  const now=new Date().toISOString();
- const p={schemaVersion:1,id:crypto.randomUUID(),originalName:name,name:finalName,target,format:'unverified',revision:revision&&/^[a-f0-9]{40,64}$/.test(revision)?revision:null,sourceHashes:{},mode,createdAt:now,updatedAt:now};
+ const p={schemaVersion:1,id:crypto.randomUUID(),journalRevision:crypto.randomUUID(),originalName:name,name:finalName,target,format:'unverified',revision:revision&&/^[a-f0-9]{40,64}$/.test(revision)?revision:null,sourceHashes:{},mode,createdAt:now,updatedAt:now};
  fs.mkdirSync(workspace);writeJsonAtomic(path.join(workspace,'project.json'),p);writeJsonAtomic(path.join(workspace,'tasks.json'),[]);
  fs.mkdirSync(path.join(workspace,'runs'));fs.mkdirSync(path.join(workspace,'reports'));
- fs.writeFileSync(path.join(workspace,'events.jsonl'),JSON.stringify({type:'created',at:now,projectId:p.id})+'\n',{flag:'wx'});return p;
+ fs.writeFileSync(path.join(workspace,'events.jsonl'),JSON.stringify({type:'created',at:now,projectId:p.id,journalRevision:p.journalRevision})+'\n',{flag:'wx'});return p;
 }
 export async function withProjectLock(workspace,callback){
  readProject(workspace);const file=within(workspace,'.project.lock');let fd;

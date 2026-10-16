@@ -1,5 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {spawnSync} from 'node:child_process';
 import {setup} from './project-helpers.mjs';import {prepareRepository} from '../skills/whitechronos-lab/scripts/projects/export.mjs';
+import {buildReport} from '../skills/whitechronos-lab/scripts/projects/report.mjs';
 test('repository allowlist excludes target, workspace and private paths',async t=>{
  const f=setup(t);fs.writeFileSync(path.join(f.workspace,'private.key'),'secret');const p=await prepareRepository(f.workspace,{outputParent:f.root});
  assert.equal(path.basename(p.destination),'Demo-2.0');assert.equal(p.status,'prepared');
@@ -18,4 +19,9 @@ test('Git failure preserves files and reuse requires attribution',async t=>{
 test('export rejects target nesting and treats shell metacharacters as path data',async t=>{
  const f=setup(t);await assert.rejects(prepareRepository(f.workspace,{outputParent:f.target}));
  const parent=path.join(f.root,'space & literal');fs.mkdirSync(parent);const r=await prepareRepository(f.workspace,{outputParent:parent});assert.equal(r.status,'prepared');
+});
+test('missing repository preparation event is reported',async t=>{
+ const f=setup(t);await prepareRepository(f.workspace,{outputParent:f.root});assert.equal(buildReport(f.workspace).journalDivergent,false);
+ const file=path.join(f.workspace,'events.jsonl');fs.writeFileSync(file,fs.readFileSync(file,'utf8').split('\n').filter(l=>!l.includes('repository-prepared')).join('\n'));
+ assert.equal(buildReport(f.workspace).journalDivergent,true);
 });

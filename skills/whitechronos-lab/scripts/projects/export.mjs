@@ -1,4 +1,4 @@
-import fs from 'node:fs';import path from 'node:path';import {spawnSync} from 'node:child_process';
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {spawnSync} from 'node:child_process';
 import {readProject,writeJsonAtomic,withProjectLock,recordEvent} from './store.mjs';import {within,assertNoLinks,assertSeparatePaths} from './paths.mjs';
 export async function prepareRepository(workspace,{outputParent,gitRunner=(args,cwd)=>spawnSync('git',args,{cwd,encoding:'utf8',windowsHide:true,shell:false})}){
  return withProjectLock(workspace,()=>{
@@ -20,7 +20,7 @@ export async function prepareRepository(workspace,{outputParent,gitRunner=(args,
   for(const [name,content]of Object.entries(files))fs.writeFileSync(path.join(destination,name),content,{flag:'wx'});
   let git;try{git=gitRunner(['init','-b','main'],destination);}catch(e){git={status:1,error:e};}
   const status=git.status===0&&!git.error?'prepared':'incomplete';p.destination=destination;p.repositoryStatus=status;p.updatedAt=new Date().toISOString();
-  writeJsonAtomic(within(workspace,'project.json'),p);recordEvent(workspace,{type:'repository-prepared',status});
+  p.journalRevision=crypto.randomUUID();writeJsonAtomic(within(workspace,'project.json'),p);recordEvent(workspace,{type:'repository-prepared',projectId:p.id,status,journalRevision:p.journalRevision});
   return{destination,status,...(status==='incomplete'?{reason:'Git não inicializou; arquivos preservados, inspecione antes de retentar.'}:{})};
  });
 }

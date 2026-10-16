@@ -26,16 +26,16 @@ export async function analyzeProject(workspace,args,{runner=runAnalysis}={}){
    for(const [s,sha]of Object.entries(hashes))if(fileDigest(within(project.target,s))!==sha)throw Error('Fonte alterada durante análise.');
    run.state='completed';run.verified=true;run.proof=proof;
    run.evidence={path:base+'/engine/stdout.json',sha256:fileDigest(expected)};
-   project.format='javascript';project.sourceHashes=hashes;project.updatedAt=new Date().toISOString();writeJsonAtomic(within(workspace,'project.json'),project);
+   project.format='javascript';project.sourceHashes=hashes;project.updatedAt=new Date().toISOString();project.journalRevision=crypto.randomUUID();writeJsonAtomic(within(workspace,'project.json'),project);recordEvent(workspace,{type:'project-analysis',projectId:project.id,journalRevision:project.journalRevision});
   }catch(e){if(run.state!=='blocked')run.state='failed';run.verified=false;run.reason=e.message;}
-  run.finishedAt=new Date().toISOString();writeJsonAtomic(file,run);recordEvent(workspace,{type:'analysis-finished',id,state:run.state});return run;
+  run.finishedAt=new Date().toISOString();run.journalRevision=crypto.randomUUID();writeJsonAtomic(file,run);recordEvent(workspace,{type:'analysis-finished',id,state:run.state,journalRevision:run.journalRevision});return run;
  });
 }
 export async function reconcileRuns(workspace,{probeProcess=()=> 'unknown'}={}){
  return withProjectLock(workspace,()=>{
   const result=[];for(const dir of fs.readdirSync(within(workspace,'runs'),{withFileTypes:true})){
    if(!dir.isDirectory())continue;const file=within(workspace,'runs/'+dir.name+'/run.json');if(!fs.existsSync(file))continue;const r=readJson(file);
-   if(['running','unknown'].includes(r.state)){const activity=probeProcess(r);r.state=activity==='absent'?'interrupted':activity==='active'?'running':'unknown';writeJsonAtomic(file,r);}
+   if(['running','unknown'].includes(r.state)){const activity=probeProcess(r);r.state=activity==='absent'?'interrupted':activity==='active'?'running':'unknown';r.journalRevision=crypto.randomUUID();writeJsonAtomic(file,r);recordEvent(workspace,{type:'analysis-reconciled',id:r.id,state:r.state,journalRevision:r.journalRevision});}
    result.push(r);
   }return result;
  });

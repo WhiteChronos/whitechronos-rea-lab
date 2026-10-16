@@ -19,8 +19,8 @@ export async function addTask(workspace,{title,acceptance,dependsOn=[]}){
  return withProjectLock(workspace,()=>{
   if(typeof title!=='string'||!title.trim()||typeof acceptance!=='string'||!acceptance.trim()||!Array.isArray(dependsOn))throw Error('Título e critério obrigatórios.');
   const tasks=readTasks(workspace);for(const dep of dependsOn)if(!tasks.some(t=>t.id===dep))throw Error('Dependência inexistente.');
-  const at=new Date().toISOString(),task={id:crypto.randomUUID(),title,acceptance,dependsOn:[...new Set(dependsOn)],state:'pending',createdAt:at,updatedAt:at};
-  tasks.push(task);writeJsonAtomic(within(workspace,'tasks.json'),tasks);recordEvent(workspace,{type:'task-added',id:task.id});return task;
+  const at=new Date().toISOString(),task={id:crypto.randomUUID(),journalRevision:crypto.randomUUID(),title,acceptance,dependsOn:[...new Set(dependsOn)],state:'pending',createdAt:at,updatedAt:at};
+  tasks.push(task);writeJsonAtomic(within(workspace,'tasks.json'),tasks);recordEvent(workspace,{type:'task-added',id:task.id,journalRevision:task.journalRevision});return task;
  });
 }
 export async function setTask(workspace,id,{state,evidence}){
@@ -32,6 +32,6 @@ export async function setTask(workspace,id,{state,evidence}){
    if(!evidence)throw Error('Evidência obrigatória.');const file=within(workspace,evidence);
    task.evidence={path:path.relative(path.resolve(workspace),file).split(path.sep).join('/'),sha256:fileDigest(file),verification:'operator-declared'};
   }else delete task.evidence;
-  task.state=state;task.updatedAt=new Date().toISOString();writeJsonAtomic(within(workspace,'tasks.json'),tasks);recordEvent(workspace,{type:'task-state',id,state});return task;
+  task.state=state;task.updatedAt=new Date().toISOString();task.journalRevision=crypto.randomUUID();writeJsonAtomic(within(workspace,'tasks.json'),tasks);recordEvent(workspace,{type:'task-state',id,state,journalRevision:task.journalRevision});return task;
  });
 }

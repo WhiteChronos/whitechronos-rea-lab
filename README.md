@@ -36,6 +36,8 @@ Forks preservam histórico; não tornam todas as ferramentas instaladas nem faze
 
 ## Evolução
 
+O fluxo de projetos independentes `Nome-2.0` está documentado em [Projetos 2.0](docs/PROJECTS-2.0.md): tarefas persistentes, análise por fonte e preparação de repositório Git separado. A validação real deve ser conferida por plataforma; o fluxo não promete cópia funcional automática.
+
 Veja [roteiro](docs/ROADMAP.md), [histórico](CHANGELOG.md) e [contribuição](CONTRIBUTING.md). A validação em CI cobre a integração e os testes indicados, não todos os programas ou hosts. Não há serviço permanente hospedado no ChatGPT.
 
 Licença MIT para o código próprio; avisos dos componentes permanecem em `skills/whitechronos-lab/references/licenses`. Os catálogos não concedem licença adicional aos projetos listados.

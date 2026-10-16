@@ -1,6 +1,7 @@
 name: Lab CI
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -24,4 +25,5 @@ jobs:
       - run: npm ci --ignore-scripts --omit=optional --no-audit --no-fund
       - run: npm test
       - run: npm run doctor
+      - run: npm run smoke
       - run: npm run upstreams

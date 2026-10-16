@@ -3,6 +3,7 @@ runtime.local.json
 .env
 .env.*
 evidence/
+/evidence-*/
 rea-evidence-*/
 *.log
 *.zip

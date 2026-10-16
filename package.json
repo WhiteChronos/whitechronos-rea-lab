@@ -1,0 +1,15 @@
+{
+  "name": "whitechronos-rea-lab",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=24.15.0" },
+  "scripts": {
+    "test": "node --test tests/lab.test.mjs tests/resolutions.test.mjs",
+    "doctor": "node skills/whitechronos-lab/scripts/lab.mjs doctor",
+    "lab": "node skills/whitechronos-lab/scripts/lab.mjs",
+    "upstreams": "node scripts/upstreams.mjs"
+  },
+  "dependencies": { "rea-agents": "6.5.0" }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "WhiteChronos Lab"
+  short_description: "Fluxos ECC e análise local com REA"
+  default_prompt: "Use $whitechronos-lab para examinar meu projeto e aplicar o fluxo de verificação adequado."

@@ -1,0 +1,11 @@
+node_modules/
+runtime.local.json
+.env
+.env.*
+evidence/
+rea-evidence-*/
+*.log
+*.zip
+toolchains/
+coverage/
+backups/

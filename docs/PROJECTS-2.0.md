@@ -50,6 +50,8 @@ gh auth login --hostname github.com --git-protocol https --web
 npm.cmd run lab -- project publish C:/projetos/meu-workspace --owner WhiteChronos --repo MeuProjeto-2.0
 ```
 
+No Windows, compare a identidade de execução antes de repetir logins: `whoami` pode identificar um usuário de sandbox diferente do usuário que fez login. Há [relato no Codex](https://github.com/openai/codex/issues/21821) de credenciais válidas no terminal normal inacessíveis ao processo isolado, e [relato no GitHub CLI](https://github.com/cli/cli/issues/14171) de diagnóstico enganoso de token inválido quando o cofre está inacessível. Esses relatos não confirmam a causa de toda falha. Se o login funciona no PowerShell normal e falha somente no Codex, registre a diferença de contexto; não revogue chaves nem repita logins com base apenas nessa mensagem. Execute manualmente a aceitação no seu terminal normal e confira o resultado salvo. Não extraia tokens, use armazenamento inseguro ou desabilite o isolamento para contornar o problema.
+
 O comando cria somente um **novo repositório privado**. Repositório já existente é colisão; nunca é sobrescrito ou adotado automaticamente. A entrega usa somente os arquivos declarados, revalida hashes e confere os blobs Git antes do commit. Não usa `git add .` nem configurações/hooks do alvo.
 
 Para publicar automaticamente ao entregar **este programa**, habilite a política persistida no seu workspace:

@@ -8,12 +8,13 @@
     "node": ">=24.15.0"
   },
   "scripts": {
-    "test": "node --test tests/lab.test.mjs tests/resolutions.test.mjs tests/semantic-smoke.test.mjs tests/project-store.test.mjs tests/project-tasks.test.mjs tests/project-analysis.test.mjs tests/project-export.test.mjs tests/project-cli.test.mjs",
+    "test": "node --test tests/lab.test.mjs tests/resolutions.test.mjs tests/semantic-smoke.test.mjs tests/project-store.test.mjs tests/project-tasks.test.mjs tests/project-analysis.test.mjs tests/project-export.test.mjs tests/project-cli.test.mjs tests/project-publication-manifest.test.mjs tests/project-publication-github.test.mjs tests/project-publication-state.test.mjs tests/project-publication-cli.test.mjs tests/project-publication-smoke.test.mjs",
     "smoke": "node scripts/semantic-smoke.mjs",
     "doctor": "node skills/whitechronos-lab/scripts/lab.mjs doctor",
     "lab": "node skills/whitechronos-lab/scripts/lab.mjs",
     "upstreams": "node scripts/upstreams.mjs",
-    "project:smoke": "node scripts/project-smoke.mjs"
+    "project:smoke": "node scripts/project-smoke.mjs",
+    "publication:smoke": "node scripts/publication-smoke.mjs"
   },
   "dependencies": {
     "rea-agents": "6.5.0"

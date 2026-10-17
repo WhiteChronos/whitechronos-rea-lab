@@ -1,6 +1,6 @@
 ---
 name: whitechronos-lab
-description: Integra os fluxos ECC e a análise local REA do WhiteChronos Lab. Use quando o usuário pedir esta ferramenta, análise de artefatos pelo REA ou aplicação dos fluxos ECC incluídos a um projeto.
+description: Organiza análise local REA, referências de workflows e entrega de programas independentes pelo WhiteChronos Lab. ECC-2.0 permanece independente do runtime REA.
 ---
 
 # WhiteChronos Lab
@@ -25,3 +25,13 @@ Para usar um fluxo ECC, leia somente a referência pertinente e adapte comandos 
 REA está disponível pela CLI desta skill, não como ferramentas MCP nativas desta conversa. O autoteste de controles Windows falhou na sessão de criação: não remova ou substitua controles para forçar a análise. Se continuar bloqueado, informe o motivo; o inventário próprio não equivale a um resultado REA.
 
 As funções locais não chamam modelos pagos. O trabalho do assistente continua sujeito aos custos e limites do Codex. Consulte `references/PROVENANCE.md` para origem e versões, e `references/licenses` para os avisos MIT preservados.
+
+## Entrega independente e GitHub
+
+Cada programa entregue tem um projectId e um repositório próprio `WhiteChronos/<nome>-2.0`. ECC-2.0 é independente: não acrescente dependência do REA ao produto. Consulte `docs/PROJECTS-2.0.md` na raiz do Lab para o manifesto e comandos completos.
+
+`project publish <workspace> --owner WhiteChronos --repo <nome>-2.0 [--manifest delivery-manifest.json]` publica somente arquivos próprios explicitamente declarados, com hashes, licença e atribuições, em um novo repositório privado. A triagem de segredos é heurística e não substitui revisão. Não copiar automaticamente o alvo nem publicar evidências, configuração pessoal ou notas.
+
+`project publication-policy <workspace> --enabled true --owner WhiteChronos --repo <nome>-2.0` habilita a chamada automática no `project deliver <workspace>`. A política é por workspace; análises e preparação documental não publicam. Não declarar o fluxo ativo em outro host ou em futuros workspaces sem conferir sua política e autenticação. Ausência de produto real não pode ser rotulada como reconstrução funcional.
+
+GitHub CLI autenticado e Git são requisitos separados dos conectores do chat. Nunca extrair tokens para fazê-los funcionar. Colisão é recusa; timeout desconhecido exige conciliação, sem recriar ou adotar um repositório apenas pelo nome. Preserve estado e diário privados para retomada por ID e SHA. Não realizar merge automático.

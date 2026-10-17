@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
-import {createProject,writeJsonAtomic,withProjectLock} from './store.mjs';import {within} from './paths.mjs';
+import {createProject,writeJsonAtomic,withProjectLock,readJson} from './store.mjs';import {within} from './paths.mjs';
+import {publishProject} from './publication.mjs';
+import {configurePublication,deliverProject} from './delivery.mjs';
 import {addTask,setTask} from './tasks.mjs';import {buildReport} from './report.mjs';import {analyzeProject,reconcileRuns} from './analysis.mjs';import {prepareRepository} from './export.mjs';
 function parse(args,allowed,repeat=[]){
  const options={};for(let i=0;i<args.length;i++){
@@ -10,7 +12,7 @@ function parse(args,allowed,repeat=[]){
  }return options;
 }
 function required(value,label){if(!value)throw Error('Informe '+label);return value;}
-export async function projectMain(args){
+export async function projectMain(args,dependencies={}){
  const [command,...rest]=args;let result,code=0;
  if(command==='create'){
   const [target,...flags]=rest,o=parse(flags,['--name','--workspace','--mode']);
@@ -22,16 +24,27 @@ export async function projectMain(args){
   else throw Error('Use task add ou task set.');
  }else{
   const [workspace,...flags]=rest;required(workspace,'workspace');
-  if(command==='analyze'){
+  if(command==='publish'){
+   const o=parse(flags,['--owner','--repo','--manifest']);
+   const owner=required(o['--owner'],'proprietário'),repo=required(o['--repo'],'nome remoto');
+   const manifest=readJson(within(workspace,o['--manifest']??'delivery-manifest.json'));
+   result=await publishProject(workspace,{owner,repo,manifest},dependencies);code=result.state==='published'?0:1;
+  }else if(command==='publication-policy'){
+   const o=parse(flags,['--enabled','--owner','--repo']);if(!['true','false'].includes(o['--enabled']))throw Error('Use --enabled true ou false.');
+   result=await configurePublication(workspace,{enabled:o['--enabled']==='true',owner:required(o['--owner'],'proprietário'),repo:required(o['--repo'],'nome remoto')});
+  }else if(command==='deliver'){
+   const o=parse(flags,['--manifest']),manifest=readJson(within(workspace,o['--manifest']??'delivery-manifest.json'));
+   result=await deliverProject(workspace,{manifest},dependencies);code=['published','not-requested'].includes(result.publication.state)?0:1;
+  }else if(command==='analyze'){
    parse(flags,['--source-path','--analysis-timeout-ms','--timeout-ms','--max-heap-mb'],['--source-path']);
-   result=await analyzeProject(workspace,flags);code=result.state==='completed'?0:1;
+   result=await(dependencies.analyze??analyzeProject)(workspace,flags);code=result.state==='completed'?0:1;
   }else if(command==='status'){parse(flags,['--json']);result=buildReport(workspace);}
   else if(command==='report'){
    parse(flags,[]);result=await withProjectLock(workspace,()=>{const report=buildReport(workspace),reportPath='reports/'+crypto.randomUUID()+'.json';writeJsonAtomic(within(workspace,reportPath),report);return{...report,reportPath};});
   }else if(command==='reconcile'){parse(flags,[]);result=await reconcileRuns(workspace);}
   else if(command==='prepare-repo'){
    const o=parse(flags,['--output-parent']);result=await prepareRepository(workspace,{outputParent:required(o['--output-parent'],'destino pai')});code=result.status==='prepared'?0:1;
-  }else throw Error('Use project create, analyze, task, status, report, reconcile ou prepare-repo.');
+  }else throw Error('Use project create, analyze, task, status, report, reconcile, prepare-repo, deliver, publish ou publication-policy.');
  }
  console.log(JSON.stringify(result,null,2));return code;
 }

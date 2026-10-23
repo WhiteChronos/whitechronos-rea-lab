@@ -11,5 +11,5 @@
     "lab": "node skills/whitechronos-lab/scripts/lab.mjs",
     "upstreams": "node scripts/upstreams.mjs"
   },
-  "dependencies": { "rea-agents": "6.5.0" }
+  "dependencies": { "rea-agents": "6.7.0" }
 }
